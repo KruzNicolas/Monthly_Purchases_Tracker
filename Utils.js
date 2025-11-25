@@ -8,7 +8,7 @@
 const Utils = {
   /**
    * Parses a value into a number, removing currency symbols.
-   * @param {string|number} value 
+   * @param {string|number} value
    * @return {number}
    */
   parseCurrency(value) {
@@ -21,18 +21,30 @@ const Utils = {
   },
 
   /**
-   * Formats a date string.
-   * @param {Date} date 
-   * @param {string} format 
+   * Formats a date string using the configured timezone.
+   * @param {Date} date
+   * @param {string} format
    * @return {string}
    */
   formatDate(date, format) {
-    return Utilities.formatDate(date, Session.getScriptTimeZone(), format);
+    return Utilities.formatDate(date, CONFIG.TIMEZONE, format);
+  },
+
+  /**
+   * Parses a date string (YYYY-MM-DD) safely to avoid timezone issues.
+   * Sets the time to noon to prevent date shifting when converting timezones.
+   * @param {string} dateString
+   * @return {Date}
+   */
+  parseDate(dateString) {
+    // Append T12:00:00 to ensure it's treated as midday, preventing
+    // day shifts due to timezone offsets (e.g., UTC to GMT-5).
+    return new Date(`${dateString}T12:00:00`);
   },
 
   /**
    * Calculates the week number of the month.
-   * @param {Date} date 
+   * @param {Date} date
    * @return {number}
    */
   getWeekOfMonth(date) {
@@ -44,7 +56,7 @@ const Utils = {
 
   /**
    * Returns the date range string for the week of the given date.
-   * @param {Date} date 
+   * @param {Date} date
    * @return {string}
    */
   getWeekDateRange(date) {
@@ -53,15 +65,15 @@ const Utils = {
     start.setDate(date.getDate() - day + 1);
     const end = new Date(start);
     end.setDate(start.getDate() + 6);
-    
-    const fmt = d => this.formatDate(d, CONFIG.FORMATS.DATE_HEADER);
+
+    const fmt = (d) => this.formatDate(d, CONFIG.FORMATS.DATE_HEADER);
     return `${fmt(start)} - ${fmt(end)}`;
   },
 
   /**
    * Helper to get or create a sheet.
-   * @param {string} name 
-   * @param {boolean} hide 
+   * @param {string} name
+   * @param {boolean} hide
    * @return {GoogleAppsScript.Spreadsheet.Sheet}
    */
   getOrCreateSheet(name, hide = false) {
@@ -72,5 +84,5 @@ const Utils = {
       if (hide) sheet.hideSheet();
     }
     return sheet;
-  }
+  },
 };

@@ -11,6 +11,7 @@ A robust, modular Google Apps Script application designed to log daily expenses 
 - **Visual Reporting:** Generates Weekly, Store-based, and Yearly Overview charts.
 - **Email Reports:** Sends HTML-formatted summaries via email.
 - **Modern UI:** Includes a responsive Sidebar form and Web App with Dark Mode support.
+- **Region Support:** Configurable Timezone handling to ensure accurate date logging regardless of server location.
 - **Currency Support:** Formatted for COP (Colombian Peso).
 
 ## 🏗️ Project Architecture
@@ -46,18 +47,19 @@ Using Namespace pattern or Singleton object to encapsulate the handles sheet man
 
 Using Namespace pattern or Singleton object to encapsulate the handles charts and emails functions.
 
-- **`clearChartsInRange(sheet, rangeA1)`**: Delete all charts in the given range.
-- **`generateWeeklyChart()`**: Creates a weekly spending chart for the current month.
+- **`deleteChartByTitle(sheet, title)`**: Removes existing charts by title to prevent duplicates when rows shift.
+- **`generateWeeklyChart()`**: Creates a weekly spending chart, intelligently parsing week labels from the sheet data.
 - **`generateStoreChart()`**: Creates a per-store spending chart for the current month.
 - **`generateYearlyOverviewChart()`**: Creates a yearly spending overview chart.
 - **`sendEmailReport(formObject)`**: Sends an email report of the month you specify in the form, with month, weekly and per-store spended totals.
 
 ### 4. `Config.js` & `Utils.js` (Helpers)
 
-- **`Config.js`**: Centralized configuration Sheets, Colors, Formats and Texts.
+- **`Config.js`**: Centralized configuration for Sheets, Colors, Formats, Timezone, and Texts.
 - **`Utils.js`**: Helper functions for dates, parsing, and formatting.
   - **`parseCurrency(value)`**: Parses a currency string to a number.
-  - **`formatDate(date, format)`**: Formats a Date object to a string.
+  - **`parseDate(dateString)`**: Safely parses dates to the configured timezone to prevent day shifts.
+  - **`formatDate(date, format)`**: Formats a Date object to a string using the configured timezone.
   - **`getWeekOfMonth(date)`**: Returns the week number of the month for a given date.
   - **`getWeekDateRange(date)`**: Returns the start and end dates of the week for a given date.
   - **`getOrCreateSheet(name, hide = false)`**: Retrieves or creates a sheet by name to avoid script errors.

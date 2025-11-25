@@ -40,8 +40,8 @@ function addPurchase(purchases) {
     if (!date || !store || !product)
       throw new Error("Missing required fields.");
 
-    const parsedDate = new Date(date);
-    if (isNaN(parsedDate)) throw new Error(`Invalid date: ${date}`);
+    const parsedDate = Utils.parseDate(date);
+    if (isNaN(parsedDate.getTime())) throw new Error(`Invalid date: ${date}`);
 
     // 1. Get Sheet
     const sheet = SheetLogic.getMonthlySheet(parsedDate);

@@ -7,23 +7,14 @@
 
 const Reporting = {
   /**
-   * Clears charts in a specific range.
+   * Deletes charts by title to avoid duplicates when rows shift.
+   * @param {GoogleAppsScript.Spreadsheet.Sheet} sheet
+   * @param {string} title
    */
-  clearChartsInRange(sheet, rangeA1) {
-    const range = sheet.getRange(rangeA1);
+  deleteChartByTitle(sheet, title) {
     const charts = sheet.getCharts();
-
     charts.forEach((chart) => {
-      const pos = chart.getContainerInfo();
-      const row = pos.getAnchorRow();
-      const col = pos.getAnchorColumn();
-
-      if (
-        range.getRow() <= row &&
-        row <= range.getLastRow() &&
-        range.getColumn() <= col &&
-        col <= range.getLastColumn()
-      ) {
+      if (chart.getOptions().get("title") === title) {
         sheet.removeChart(chart);
       }
     });
@@ -49,16 +40,26 @@ const Reporting = {
 
     const weekNames = [];
     const weekTotals = [];
+    let currentWeekLabel = "";
 
     for (let i = 0; i < colB.length; i++) {
-      // Iterate through column B to find week totals data
-      if (
-        // If the cell matches the week total label push the week name and total to respective arrays
-        typeof colB[i] === "string" &&
-        colB[i].trim().toUpperCase() === CONFIG.TEXT.WEEK_TOTAL_LABEL
-      ) {
-        weekNames.push("Week " + (weekTotals.length + 1));
-        weekTotals.push(Utils.parseCurrency(colG[i]));
+      const val = colB[i];
+      if (typeof val === "string") {
+        const trimmed = val.trim();
+
+        // Capture the Week Label from the header (e.g., "Week 4 (17/11 - 23/11)")
+        // We extract just "Week N" for the chart axis to keep it clean.
+        if (trimmed.startsWith("Week ")) {
+          const match = trimmed.match(/^(Week\s\d+)/i);
+          currentWeekLabel = match ? match[1] : trimmed;
+        }
+
+        // Find the Total row and associate it with the current week
+        if (trimmed.toUpperCase() === CONFIG.TEXT.WEEK_TOTAL_LABEL) {
+          const label = currentWeekLabel || "Week " + (weekNames.length + 1);
+          weekNames.push(label);
+          weekTotals.push(Utils.parseCurrency(colG[i]));
+        }
       }
     }
 
@@ -67,7 +68,8 @@ const Reporting = {
       return;
     }
 
-    this.clearChartsInRange(sheet, "I5:P18");
+    const chartTitle = "Weekly Expenses (Total) 📉🔥";
+    this.deleteChartByTitle(sheet, chartTitle);
 
     helperSheet.getRange("A:B").clearContent();
     helperSheet.getRange("A1:B1").setValues([["Week", "Total"]]);
@@ -81,7 +83,7 @@ const Reporting = {
       .asLineChart()
       .setPosition(5, 9, 0, 0)
       .addRange(helperSheet.getRange(2, 1, weekTotals.length, 2))
-      .setOption("title", "Weekly Expenses (Total) 📉🔥")
+      .setOption("title", chartTitle)
       .setOption("vAxis", { title: "Amount (COP)", format: "#,##0" })
       .setOption("legend", { position: "none" })
       .setOption("pointSize", 7)
@@ -117,7 +119,8 @@ const Reporting = {
       }
     }
 
-    this.clearChartsInRange(sheet, "I25:P38");
+    const chartTitle = "Expenses by Store 🏪💸";
+    this.deleteChartByTitle(sheet, chartTitle);
 
     helperSheet.getRange("C:D").clearContent();
     helperSheet.getRange("C1:D1").setValues([["Store", "Total"]]);
@@ -132,7 +135,7 @@ const Reporting = {
         .asColumnChart()
         .setPosition(25, 9, 0, 0)
         .addRange(helperSheet.getRange(2, 3, data.length, 2))
-        .setOption("title", "Expenses by Store 🏪💸")
+        .setOption("title", chartTitle)
         .setOption("vAxis", { format: "#,##0" })
         .setOption("legend", { position: "none" })
         .build();

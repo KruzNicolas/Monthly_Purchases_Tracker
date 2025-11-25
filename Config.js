@@ -27,6 +27,7 @@ const CONFIG = {
     DATE_DISPLAY: "yyyy-MM-dd",
     DATE_HEADER: "dd/MM",
   },
+  TIMEZONE: "America/Bogota",
   TEXT: {
     WEEK_TOTAL_LABEL: "WEEK TOTAL:",
     MONTH_TOTAL_LABEL: "MONTH TOTAL:",
