@@ -2,86 +2,59 @@
 
 ## 📝 Overview
 
-A robust, modular Google Apps Script application designed to log daily expenses into month-based sheets. It automatically groups transactions by week, calculates totals dynamically, and generates visual reports.
+A streamlined Google Apps Script application designed to log daily expenses into a centralized database sheet (`DB_Transactions`). It provides a user-friendly interface via a Sidebar or Web App for quick data entry, ensuring all transactions are stored in a structured format for easy analysis.
 
 ## ✨ Features
 
-- **Automated Organization:** Automatically creates monthly sheets and weekly blocks.
-- **Dynamic Calculations:** Uses spreadsheet formulas for real-time updates.
-- **Visual Reporting:** Generates Weekly, Store-based, and Yearly Overview charts.
-- **Email Reports:** Sends HTML-formatted summaries via email.
-- **Modern UI:** Includes a responsive Sidebar form and Web App with Dark Mode support.
-- **Region Support:** Configurable Timezone handling to ensure accurate date logging regardless of server location.
-- **Currency Support:** Formatted for COP (Colombian Peso).
+- **Centralized Database:** All transactions are stored in a single `DB_Transactions` sheet.
+- **User-Friendly Forms:** Add purchases via a Sidebar in Google Sheets or a standalone Web App.
+- **Batch Processing:** Generates unique batch IDs for transaction groups based on date and category.
+- **Configurable:** Easy configuration for categories and timezone.
+- **Responsive UI:** Clean HTML form for data entry.
 
 ## 🏗️ Project Architecture
 
-The codebase is refactored into specialized modules to ensure maintainability and scalability (DRY principles).
+The codebase is refactored into specialized modules for simplicity and maintainability.
 
 ### 1. `Code.js` (Main Controller)
 
 Entry point functions for the Google App Script application.
 
-- **`onOpen()`**: Adds a custom menu to the Google Sheets UI for easy access to the purchase form, charts and report email functionality.
+- **`onOpen()`**: Adds a custom menu to the Google Sheets UI for easy access to the purchase form and reporting options.
 - **`doGet(e)`**: Serves the HTML form for adding purchases when accessed via a web URL.
-- **`addPurchase(purchases)`**: Validates the input purchase data, ensures the appropriate monthly sheet and week block exist, adds the purchase row, and recalculates totals.
-- **`generateWeeklyChart()`**: Call the function from other module to create a weekly spending chart for the current month.
-- **`generateStoreChart()`**: Call the function from other module to create a per-store spending chart for the current month.
-- **`generateYearlyOverviewChart()`**: Call the function from other module to create a yearly spending overview chart.
-- **`showEmailDialog()`**: Opens a dialog in the Google Sheets UI to allow the user to input parameters like month and email address for sending an email report.
-- **`processEmailReport(formObject)`**: Call the function from other module to send an email report of the month specified in the form, with month, weekly and per-store spended totals.
 - **`showFormSidebar()`**: Opens a sidebar in the Google Sheets UI to display the purchase input form.
+- **`openWebApp()`**: Opens a dialog to redirect to the Web App (requires `FORM_URL` property).
+- **`addPurchase(purchaseData)`**: Validates the input purchase data and appends it to the `DB_Transactions` sheet with a generated batch ID.
 
-### 2. `SheetLogic.js` (Domain Logic)
+### 2. `Config.js` (Configuration)
 
-Using Namespace pattern or Singleton object to encapsulate the handles sheet manipulation functions.
+Centralizes configuration constants.
 
-- **`getMonthlySheet(date)`**: Retrieves the sheet for the given month, or creates it if doesn't exist.
-- **`ensureWeekExists(sheet, weekLabel)`**: Ensures the week block for the given week label exists in the sheet or creates it.
-- **`getWeekBlock(sheet, weekLabel)`**: Retrieves the row indices for the week block with the given label.
-- **`addTransactionRow(sheet, block, rowData)`**: Adds a transaction row to the specified week block with all the necessary formatting.
-- **`updateWeekTotal(sheet, block)`**: Recalculates and updates the total for the specified week block.
-- **`updateMonthTotal(sheet)`**: Recalculates and updates the total for the month by summing all week totals.
+- **`SHEETS`**: Defines sheet names (e.g., `DB_Transactions`).
+- **`CATEGORIES`**: List of available expense categories.
+- **`TIMEZONE`**: Configured timezone (e.g., "America/Bogota").
 
-### 3. `Reporting.js` (Reporting Service)
+### 3. `Utilities.js` (Helpers)
 
-Using Namespace pattern or Singleton object to encapsulate the handles charts and emails functions.
+Helper functions for data formatting and processing.
 
-- **`deleteChartByTitle(sheet, title)`**: Removes existing charts by title to prevent duplicates when rows shift.
-- **`generateWeeklyChart()`**: Creates a weekly spending chart, intelligently parsing week labels from the sheet data.
-- **`generateStoreChart()`**: Creates a per-store spending chart for the current month.
-- **`generateYearlyOverviewChart()`**: Creates a yearly spending overview chart.
-- **`sendEmailReport(formObject)`**: Sends an email report of the month you specify in the form, with month, weekly and per-store spended totals.
-
-### 4. `Config.js` & `Utils.js` (Helpers)
-
-- **`Config.js`**: Centralized configuration for Sheets, Colors, Formats, Timezone, and Texts.
-- **`Utils.js`**: Helper functions for dates, parsing, and formatting.
-  - **`parseCurrency(value)`**: Parses a currency string to a number.
-  - **`parseDate(dateString)`**: Safely parses dates to the configured timezone to prevent day shifts.
-  - **`formatDate(date, format)`**: Formats a Date object to a string using the configured timezone.
-  - **`getWeekOfMonth(date)`**: Returns the week number of the month for a given date.
-  - **`getWeekDateRange(date)`**: Returns the start and end dates of the week for a given date.
-  - **`getOrCreateSheet(name, hide = false)`**: Retrieves or creates a sheet by name to avoid script errors.
+- **`Utils.formatDate(date, format)`**: Formats a Date object to a string using the configured timezone.
+- **`Utils.generateBatchId(category)`**: Generates a unique batch ID (e.g., `20240520_1430_Gro`) for grouping transactions.
+- **`Utils.getRealLastRow(sheet, column)`**: Finds the last row with actual data, ignoring empty formatted rows.
 
 ## ⚙️ Setup & Configuration
 
-1.  **Script Properties:**
+1.  **Sheet Setup:**
+
+    - Create a sheet named `DB_Transactions` (or update `Config.js` to match your sheet name).
+
+2.  **Script Properties (Optional for Web App):**
 
     - Go to **Project Settings > Script Properties**.
-    - Add `FORM_URL`: The URL of your deployed Web App (ends in `/exec`).
+    - Add `FORM_URL`: The URL of your deployed Web App.
 
-2.  **Configuration:**
-    - Edit `Config.js` to change colors, currency formats, or sheet names without touching the logic.
-
-## 🎨 Sheet Layout & Styling
-
-The script enforces a strict layout to ensure formula integrity:
-
-- **Header:** `#064E3B` (Dark Green)
-- **Data Rows:** `#F6FFF6` (Light Green)
-- **Week Total:** `#064E3B` (Bold White Text)
-- **Month Total:** Located at `I2:J2` (Blue `#3453AC`)
+3.  **Configuration:**
+    - Edit `Config.js` to modify categories or timezone settings.
 
 ## 🚀 Usage
 
@@ -91,19 +64,11 @@ The script enforces a strict layout to ensure formula integrity:
     - Or use the Web App link if configured.
     - Fill in the Date, Store, and Products.
     - Click "Save Purchase".
+    - The data will be appended to the `DB_Transactions` sheet.
 
-2.  **Generate Charts:**
-
-    - Navigate to a specific Month sheet.
-    - Select `📊 Charts & Reports > Generate Weekly Chart` or `Generate Store Chart`.
-    - Select `📊 Charts & Reports > Generate Yearly Overview` to track expenses across all months.
-    - Charts will appear directly on the sheet.
-
-3.  **Send Report:**
-    - Select `📧 Send Report via Email` from the menu.
-    - Choose the month and enter the recipient email.
-    - An HTML report with totals and breakdowns will be sent.
+2.  **Reporting (Menu Options):**
+    - The `📊 Charts & Reports` menu includes options for generating charts and sending emails.
 
 ---
 
-_Generated for personal expense tracking._
+_Refactored for modularity and centralized data management._

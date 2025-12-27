@@ -221,13 +221,22 @@
         </div>
 
         <div class="form-group">
-          <label>Store</label>
-          <select name="store" required>
-            <option value="Ara">Ara</option>
-            <option value="Surtifamiliar">Surtifamiliar</option>
-            <option value="Exito">Éxito</option>
-            <option value="Mercar">Mercar</option>
+          <label>Category</label>
+          <select name="category" required>
+            <option value="Groceries">Groceries</option>
+            <option value="Pharmacy">Pharmacy</option>
+            <option value="Transport">Transport</option>
+            <option value="Utilities">Utilities</option>
+            <option value="Subscriptions">Subscriptions</option>
+            <option value="Debt">Debt</option>
+            <option value="Leisure">Leisure</option>
+            <option value="Others">Others</option>
           </select>
+        </div>
+
+        <div class="form-group">
+          <label>Store</label>
+          <input type="text" name="store" placeholder="Optional store name">
         </div>
 
         <div class="products-label">
@@ -319,11 +328,13 @@
 
         const formData = new FormData(form);
         const date = formData.get('date');
-        const store = formData.get('store');
+        const category = formData.get('category');
+        const store = formData.get('store') || 'N/A';
 
         const productRows = [...productsContainer.querySelectorAll('.product-row')];
         const purchaseData = productRows.map(row => ({
           date,
+          category,
           store,
           product: row.querySelector('input[name="product"]').value,
           quantity: Number(row.querySelector('input[name="quantity"]').value),
@@ -343,7 +354,8 @@
           document.getElementById('addProduct').click();
           // Restore date
           document.querySelector('input[name="date"]').value = date;
-          document.querySelector('select[name="store"]').value = store;
+          document.querySelector('select[name="category"]').value = category;
+          document.querySelector('input[name="store"]').value = store;
 
           btn.innerText = originalText;
           btn.disabled = false;
