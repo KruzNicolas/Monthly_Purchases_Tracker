@@ -53,7 +53,7 @@
       .container {
         background-color: var(--card-bg);
         width: 100%;
-        max-width: 500px;
+        max-width: 550px;
         padding: 2rem;
         border-radius: var(--radius);
         box-shadow: var(--shadow);
@@ -341,32 +341,36 @@
           price: Number(row.querySelector('input[name="price"]').value)
         }));
 
+        const resetButton = () => {
+          btn.innerText = originalText;
+          btn.disabled = false;
+        };
+
+        const successTimeout = setTimeout(() => {
+          resetButton();
+        }, 10000);
+
         google.script.run.withSuccessHandler(msg => {
+          clearTimeout(successTimeout);
           const status = document.getElementById('status');
           status.innerText = msg;
           status.className = 'success';
           
-          // Reset form but keep date and store if desired, or full reset
-          // form.reset(); 
-          // Resetting only products to allow rapid entry for same store/date
           productsContainer.innerHTML = ''; 
-          // Add one empty row back
           document.getElementById('addProduct').click();
-          // Restore date
           document.querySelector('input[name="date"]').value = date;
           document.querySelector('select[name="category"]').value = category;
           document.querySelector('input[name="store"]').value = store;
 
-          btn.innerText = originalText;
-          btn.disabled = false;
+          resetButton();
           
           setTimeout(() => status.innerText = '', 3000);
         }).withFailureHandler(err => {
+          clearTimeout(successTimeout);
           const status = document.getElementById('status');
           status.innerText = 'Error: ' + err.message;
           status.className = 'error';
-          btn.innerText = originalText;
-          btn.disabled = false;
+          resetButton();
         }).addPurchase(purchaseData);
       });
     </script>

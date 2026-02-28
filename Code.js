@@ -7,18 +7,8 @@
 
 function onOpen() {
   SpreadsheetApp.getUi()
-    .createMenu("📊 Charts & Reports")
-    .addItem("➕ Open Sidebar Form", "showFormSidebar")
-    .addSeparator()
-    .addItem("Generate Weekly Chart 📉 (Current Sheet)", "generateWeeklyChart")
-    .addItem("Generate Store Chart 🏪 (Current Sheet)", "generateStoreChart")
-    .addSeparator()
-    .addItem(
-      "🚀 Generate YEARLY SUMMARY (Dashboard)",
-      "generateYearlyOverviewChart"
-    )
-    .addSeparator()
-    .addItem("📧 Send Report via Email", "showEmailDialog")
+    .createMenu("📊 Purchase Tracker")
+    .addItem("➕ Add New Purchase", "showFormSidebar")
     .addToUi();
 }
 
@@ -31,45 +21,14 @@ function doGet(e) {
 // --- EXPOSED REPORTING FUNCTIONS ---
 
 /**
- * Opens the form in the sidebar.
+ * Opens the form in a modal dialog.
  */
 function showFormSidebar() {
-  const html =
-    HtmlService.createHtmlOutputFromFile("form").setTitle("Expense Tracker");
-  SpreadsheetApp.getUi().showSidebar(html);
-}
-
-/**
- * Opens a dialog with a link to the Web App.
- * This is more reliable than auto-redirecting, which can be blocked by browsers.
- */
-/**
- * Opens a dialog with a link to the Web App.
- * Uses the URL defined in Script Properties (Environment Variable: FORM_URL).
- */
-function openWebApp() {
-  const url = PropertiesService.getScriptProperties().getProperty("FORM_URL");
-
-  if (!url) {
-    SpreadsheetApp.getUi().alert(
-      "⚠️ FORM_URL not found in Script Properties!\n\n1. Go to Project Settings > Script Properties.\n2. Add a property named 'FORM_URL'.\n3. Paste your Web App URL as the value."
-    );
-    return;
-  }
-
-  const html = `
-    <script>
-      window.open('${url}', '_blank');
-      google.script.host.close();
-    </script>
-    <p>Redirecting...</p>
-  `;
-
-  const userInterface = HtmlService.createHtmlOutput(html)
-    .setWidth(200)
-    .setHeight(50);
-
-  SpreadsheetApp.getUi().showModalDialog(userInterface, "Opening...");
+  const html = HtmlService.createHtmlOutputFromFile("form")
+    .setTitle("Expense Tracker")
+    .setWidth(600)
+    .setHeight(700);
+  SpreadsheetApp.getUi().showModalDialog(html, "New Purchase");
 }
 
 /**
@@ -115,5 +74,5 @@ function addPurchase(purchaseData) {
   // Force changes to be written
   SpreadsheetApp.flush();
 
-  return `✅ Successfully added ${rows.length} items to "${CONFIG.SHEETS.TRANSACTIONS}"!`;
+  return `✅ Successfully added ${rows.length} item(s)!`;
 }
